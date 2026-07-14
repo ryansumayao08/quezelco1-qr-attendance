@@ -72,28 +72,30 @@ const API="https://script.google.com/macros/s/AKfycbwuQVpmi_6dQZfpGCFg-Z-Thb-vTo
 
 let scanner=new Html5Qrcode("reader");
 
-Html5Qrcode.getCameras().then(cameras=>{
+Html5Qrcode.getCameras().then(cameras => {
 
-    if(cameras.length){
+    let rearCamera = cameras.find(camera =>
+        camera.label.toLowerCase().includes("back") ||
+        camera.label.toLowerCase().includes("rear")
+    );
 
-       scanner.start(
-    {
-        facingMode: {
-            exact: "environment"
-        }
-    },
-    {
-        fps: 15,
-        qrbox: {
-            width: 280,
-            height: 280
-        },
-        aspectRatio: 1.0
-    },
-    success
-);
-
+    if (!rearCamera) {
+        rearCamera = cameras[cameras.length - 1];
     }
+
+    scanner.start(
+        rearCamera.id,
+        {
+            fps: 15,
+            qrbox: 280
+        },
+        success
+    );
+
+}).catch(err => {
+
+    document.getElementById("result").innerHTML =
+        "Camera Error: " + err;
 
 });
 
