@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>QUEZELCO I QR Attendance</title>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+    text-align:center;
+}
+
+header{
+    background:#006633;
+    color:white;
+    padding:15px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+#reader{
+    width:350px;
+    margin:25px auto;
+}
+
+#result{
+
+    margin:20px;
+
+    font-size:22px;
+
+    color:#006633;
+
+    font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+QUEZELCO I
+
+<br>
+
+QR ATTENDANCE SYSTEM
+
+</header>
+
+<div id="reader"></div>
+
+<div id="result">
+
+Waiting for Scan...
+
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbwuQVpmi_6dQZfpGCFg-Z-Thb-vTojohzX1hXo0bs3D_Z6R6RFHRrjRGr321fzrrF_RNQ/exec";
+
+let scanner=new Html5Qrcode("reader");
+
+Html5Qrcode.getCameras().then(cameras=>{
+
+    if(cameras.length){
+
+        scanner.start(
+
+            cameras[0].id,
+
+            {
+
+                fps:10,
+
+                qrbox:250
+
+            },
+
+            success
+
+        );
+
+    }
+
+});
+
+function success(decodedText){
+
+    document.getElementById("result").innerHTML="Checking...";
+
+    fetch(API,{
+
+        method:"POST",
+
+        body:JSON.stringify({
+
+            qr:decodedText
+
+        })
+
+    })
+
+    .then(r=>r.json())
+
+    .then(data=>{
+
+        if(data.success){
+
+            document.getElementById("result").innerHTML=
+
+            "✅ "+data.action+
+
+            "<br><br>"+
+
+            data.name+
+
+            "<br>"+
+
+            data.time;
+
+        }else{
+
+            document.getElementById("result").innerHTML=
+
+            "❌ "+data.message;
+
+        }
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
