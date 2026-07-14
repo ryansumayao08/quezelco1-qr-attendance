@@ -70,92 +70,80 @@ Waiting for Scan...
 
 const API="https://script.google.com/macros/s/AKfycbwuQVpmi_6dQZfpGCFg-Z-Thb-vTojohzX1hXo0bs3D_Z6R6RFHRrjRGr321fzrrF_RNQ/exec";
 
-let scanner=new Html5Qrcode("reader");
+let scanner = new Html5Qrcode("reader");
+let scanning = false;
 
-Html5Qrcode.getCameras().then(cameras => {
+function startScanner(){
 
-    if (!cameras.length) {
-        document.getElementById("result").innerHTML = "❌ No camera found.";
-        return;
-    }
+    Html5Qrcode.getCameras().then(cameras=>{
 
-    // Hanapin ang rear/back camera
-    let rearCamera = cameras.find(camera =>
-        camera.label.toLowerCase().includes("back") ||
-        camera.label.toLowerCase().includes("rear") ||
-        camera.label.toLowerCase().includes("environment")
-    );
+        let rear = cameras[cameras.length-1];
 
-    // Kung walang label na "back", gamitin ang huling camera
-    if (!rearCamera) {
-        rearCamera = cameras[cameras.length - 1];
-    }
+        scanner.start(
+            rear.id,
+            {
+                fps:10,
+                qrbox:250
+            },
+            onScan
+        );
 
-    scanner.start(
-        rearCamera.id,
-        {
-            fps: 15,
-            qrbox: {
-                width: 280,
-                height: 280
-            }
-        },
-        success
-    );
+    });
 
-}).catch(err => {
+}
 
-    console.error(err);
+async function onScan(decodedText){
 
-    document.getElementById("result").innerHTML =
-        "❌ Camera Error: " + err;
+    if(scanning) return;
 
-});
-function success(decodedText){
+    scanning = true;
+
+    await scanner.stop();
 
     document.getElementById("result").innerHTML="Checking...";
 
     fetch(API,{
-
         method:"POST",
-
+        headers:{
+            "Content-Type":"application/json"
+        },
         body:JSON.stringify({
-
             qr:decodedText
-
         })
-
     })
-
     .then(r=>r.json())
-
     .then(data=>{
 
         if(data.success){
 
             document.getElementById("result").innerHTML=
-
             "✅ "+data.action+
-
-            "<br><br>"+
-
-            data.name+
-
-            "<br>"+
-
-            data.time;
+            "<br>"+data.name+
+            "<br>"+data.time;
 
         }else{
 
             document.getElementById("result").innerHTML=
-
             "❌ "+data.message;
 
         }
 
+    })
+    .finally(()=>{
+
+        setTimeout(()=>{
+
+            scanning=false;
+
+            startScanner();
+
+        },3000);
+
     });
 
 }
+
+startScanner();
 
 </script>
 
