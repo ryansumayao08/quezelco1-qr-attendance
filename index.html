@@ -74,11 +74,19 @@ let scanner=new Html5Qrcode("reader");
 
 Html5Qrcode.getCameras().then(cameras => {
 
+    if (!cameras.length) {
+        document.getElementById("result").innerHTML = "❌ No camera found.";
+        return;
+    }
+
+    // Hanapin ang rear/back camera
     let rearCamera = cameras.find(camera =>
         camera.label.toLowerCase().includes("back") ||
-        camera.label.toLowerCase().includes("rear")
+        camera.label.toLowerCase().includes("rear") ||
+        camera.label.toLowerCase().includes("environment")
     );
 
+    // Kung walang label na "back", gamitin ang huling camera
     if (!rearCamera) {
         rearCamera = cameras[cameras.length - 1];
     }
@@ -87,18 +95,22 @@ Html5Qrcode.getCameras().then(cameras => {
         rearCamera.id,
         {
             fps: 15,
-            qrbox: 280
+            qrbox: {
+                width: 280,
+                height: 280
+            }
         },
         success
     );
 
 }).catch(err => {
 
+    console.error(err);
+
     document.getElementById("result").innerHTML =
-        "Camera Error: " + err;
+        "❌ Camera Error: " + err;
 
 });
-
 function success(decodedText){
 
     document.getElementById("result").innerHTML="Checking...";
