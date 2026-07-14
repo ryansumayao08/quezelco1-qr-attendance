@@ -76,21 +76,22 @@ Html5Qrcode.getCameras().then(cameras=>{
 
     if(cameras.length){
 
-        scanner.start(
-
-            cameras[0].id,
-
-            {
-
-                fps:10,
-
-                qrbox:250
-
-            },
-
-            success
-
-        );
+       scanner.start(
+    {
+        facingMode: {
+            exact: "environment"
+        }
+    },
+    {
+        fps: 15,
+        qrbox: {
+            width: 280,
+            height: 280
+        },
+        aspectRatio: 1.0
+    },
+    success
+);
 
     }
 
